@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:ledger_ethereum/src/operations/ethereum_transaction_operation.dart';
 import 'package:ledger_flutter/ledger_flutter.dart';
 import 'package:web3dart/crypto.dart';
 
@@ -41,15 +42,23 @@ class EthereumAppLedger extends LedgerApp {
   }
 
   @override
-  Future getVersion(LedgerDevice device) {
-    // TODO: implement getVersion
-    throw UnimplementedError();
+  Future<Uint8List> signTransaction(
+      LedgerDevice device, Uint8List transaction) async {
+    final signature = await ledger.sendOperation<Map<String, String>>(
+      device,
+      EthereumTransactionOperation(
+          accountIndex: accountIndex, transaction: transaction),
+      transformer: transformer,
+    );
+    final r = padUint8ListTo32(hexToBytes(signature['r']!));
+    final s = padUint8ListTo32(hexToBytes(signature['s']!));
+    final v = hexToBytes(signature['v']!);
+    return uint8ListFromList(r + s + v);
   }
 
   @override
-  Future<Uint8List> signTransaction(
-      LedgerDevice device, Uint8List transaction) {
-    // TODO: implement signTransaction
+  Future getVersion(LedgerDevice device) {
+    // TODO: implement getVersion
     throw UnimplementedError();
   }
 
