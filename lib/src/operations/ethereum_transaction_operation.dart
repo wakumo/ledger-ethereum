@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:ledger_ethereum/src/utils/transaction_decoder.dart';
+import 'package:ledger_ethereum/src/utils/transaction_handler.dart';
 import 'package:ledger_flutter/ledger_flutter.dart';
 
 import '../model/decoded_info.dart';
@@ -17,7 +17,7 @@ class EthereumTransactionOperation
 
   @override
   Future<List<Uint8List>> write(ByteDataWriter writer) async {
-    decodedInfo = TransactionDecoder.decodeTxInfo(transaction);
+    decodedInfo = TransactionHandler.decodeTx(transaction);
     final vrsOffset = decodedInfo.vrsOffset;
 
     final output = <Uint8List>[];

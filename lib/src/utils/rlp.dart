@@ -1,12 +1,90 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
-List<int> arrayifyInteger(int value) {
-  final result = <int>[];
-  while (value != 0) {
-    result.insert(0, value & 0xff);
-    value >>= 8;
+import 'package:web3dart/crypto.dart';
+
+import 'length_tracking_byte_sink.dart';
+import 'utils.dart';
+
+void _encodeString(Uint8List string, LengthTrackingByteSink builder) {
+  // For a single byte in [0x00, 0x7f], that byte is its own RLP encoding
+  if (string.length == 1 && string[0] <= 0x7f) {
+    builder.addByte(string[0]);
+    return;
   }
-  return result;
+
+  // If a string is between 0 and 55 bytes long, its encoding is 0x80 plus
+  // its length, followed by the actual string
+  if (string.length <= 55) {
+    builder
+      ..addByte(0x80 + string.length)
+      ..add(string);
+    return;
+  }
+
+  // More than 55 bytes long, RLP is (0xb7 + length of encoded length), followed
+  // by the length, followed by the actual string
+  final length = string.length;
+  final encodedLength = unsignedIntToBytes(BigInt.from(length));
+
+  builder
+    ..addByte(0xb7 + encodedLength.length)
+    ..add(encodedLength)
+    ..add(string);
+}
+
+void encodeList(List list, LengthTrackingByteSink builder) {
+  final subBuilder = LengthTrackingByteSink();
+  for (final item in list) {
+    _encodeToBuffer(item, subBuilder);
+  }
+
+  final length = subBuilder.length;
+  if (length <= 55) {
+    builder
+      ..addByte(0xc0 + length)
+      ..add(subBuilder.asBytes());
+    return;
+  } else {
+    final encodedLength = unsignedIntToBytes(BigInt.from(length));
+
+    builder
+      ..addByte(0xf7 + encodedLength.length)
+      ..add(encodedLength)
+      ..add(subBuilder.asBytes());
+    return;
+  }
+}
+
+void _encodeInt(BigInt val, LengthTrackingByteSink builder) {
+  if (val == BigInt.zero) {
+    _encodeString(Uint8List(0), builder);
+  } else {
+    _encodeString(unsignedIntToBytes(val), builder);
+  }
+}
+
+void _encodeToBuffer(dynamic value, LengthTrackingByteSink builder) {
+  if (value is Uint8List) {
+    _encodeString(value, builder);
+  } else if (value is List) {
+    encodeList(value, builder);
+  } else if (value is BigInt) {
+    _encodeInt(value, builder);
+  } else if (value is int) {
+    _encodeInt(BigInt.from(value), builder);
+  } else if (value is String) {
+    _encodeString(uint8ListFromList(utf8.encode(value)), builder);
+  } else {
+    throw UnsupportedError('$value cannot be rlp-encoded');
+  }
+}
+
+Uint8List encode(dynamic value) {
+  final builder = LengthTrackingByteSink();
+  _encodeToBuffer(value, builder);
+
+  return builder.asBytes();
 }
 
 int unarrayifyInteger(Uint8List data, int offset, int length) {
@@ -15,47 +93,6 @@ int unarrayifyInteger(Uint8List data, int offset, int length) {
     result = (result * 256) + data[offset + i];
   }
   return result;
-}
-
-List<int> _encode(dynamic object) {
-  if (object is List) {
-    var payload = <int>[];
-    for (var child in object) {
-      payload.addAll(_encode(child));
-    }
-
-    if (payload.length <= 55) {
-      payload.insert(0, 0xc0 + payload.length);
-      return payload;
-    }
-
-    final length = arrayifyInteger(payload.length);
-    length.insert(0, 0xf7 + length.length);
-
-    return [...length, ...payload];
-  }
-
-  if (!(object is Uint8List)) {
-    throw ArgumentError("RLP object must be BytesLike");
-  }
-
-  final data = object.toList();
-
-  if (data.length == 1 && data[0] <= 0x7f) {
-    return data;
-  } else if (data.length <= 55) {
-    data.insert(0, 0x80 + data.length);
-    return data;
-  }
-
-  final length = arrayifyInteger(data.length);
-  length.insert(0, 0xb7 + length.length);
-
-  return [...length, ...data];
-}
-
-Uint8List encode(dynamic object) {
-  return Uint8List.fromList(_encode(object));
 }
 
 class Decoded {

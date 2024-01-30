@@ -1,15 +1,17 @@
 import 'dart:typed_data';
 
 import 'package:ledger_ethereum/src/model/decoded_transaction.dart';
+import 'package:ledger_flutter/ledger_flutter.dart';
 import 'package:web3dart/crypto.dart';
+import 'package:web3dart/web3dart.dart';
 
 import '../model/decoded_info.dart';
 import 'rlp.dart';
 
-class TransactionDecoder {
+class TransactionHandler {
   static const validTypes = [1, 2];
 
-  static DecodedInfo decodeTxInfo(Uint8List rawTx) {
+  static DecodedInfo decodeTx(Uint8List rawTx) {
     final type = int.parse(rawTx[0].toString());
     final txType = validTypes.contains(type) ? type : null;
     final rlpData = (txType == null) ? rawTx : rawTx.sublist(1);
@@ -95,5 +97,61 @@ class TransactionDecoder {
         chainId: chainId,
         chainIdTruncated: chainIdTruncated,
         vrsOffset: vrsOffset);
+  }
+
+  static Uint8List encodeTx(Transaction transaction, BigInt chainId) {
+    if (transaction.isEIP1559) {
+      final encodedTx = ByteDataWriter();
+      encodedTx.writeUint8(0x02);
+      encodedTx.write(encode(_encodeEIP1559ToRlp(transaction, chainId)));
+      return encodedTx.toBytes();
+    }
+    return encode(_encodeToRlp(transaction, chainId));
+  }
+
+  static List<dynamic> _encodeEIP1559ToRlp(
+      Transaction transaction, BigInt chainId) {
+    final list = [
+      chainId,
+      transaction.nonce,
+      transaction.maxPriorityFeePerGas!.getInWei,
+      transaction.maxFeePerGas!.getInWei,
+      transaction.maxGas,
+    ];
+
+    if (transaction.to != null) {
+      list.add(transaction.to!.addressBytes);
+    } else {
+      list.add('');
+    }
+
+    list
+      ..add(transaction.value?.getInWei)
+      ..add(transaction.data);
+
+    list.add([]); // access list
+
+    return list;
+  }
+
+  static List<dynamic> _encodeToRlp(Transaction transaction, BigInt chainId) {
+    final list = [
+      transaction.nonce,
+      transaction.gasPrice?.getInWei,
+      transaction.maxGas,
+    ];
+
+    if (transaction.to != null) {
+      list.add(transaction.to!.addressBytes);
+    } else {
+      list.add('');
+    }
+
+    list
+      ..add(transaction.value?.getInWei)
+      ..add(transaction.data)
+      ..add(chainId);
+
+    return list;
   }
 }
