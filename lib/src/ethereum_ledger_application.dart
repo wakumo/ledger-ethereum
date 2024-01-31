@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:eth_sig_util/eth_sig_util.dart';
+import 'package:eth_sig_util/model/typed_data.dart';
+import 'package:ledger_ethereum/src/operations/ethereum_eip712_hashed_message_operation.dart';
 import 'package:ledger_ethereum/src/operations/ethereum_transaction_operation.dart';
 import 'package:ledger_flutter/ledger_flutter.dart';
 import 'package:web3dart/crypto.dart';
@@ -23,7 +27,7 @@ class EthereumAppLedger extends LedgerApp {
       EthereumPublicKeyOperation(accountIndex: accountIndex),
       transformer: transformer,
     );
-    return [account.publicKey];
+    return [account.address];
   }
 
   @override
@@ -57,15 +61,40 @@ class EthereumAppLedger extends LedgerApp {
   }
 
   @override
-  Future getVersion(LedgerDevice device) {
-    // TODO: implement getVersion
-    throw UnimplementedError();
+  Future<Uint8List> signEIP712HashedMessage(
+      {required LedgerDevice device,
+      required Uint8List domainSeparator,
+      required Uint8List hashStructMessage}) async {
+    final signature = await ledger.sendOperation<Signature>(
+      device,
+      EthereumEIP712HashedMessageOperation(
+          accountIndex: accountIndex,
+          domainSeparator: domainSeparator,
+          hashStructMessage: hashStructMessage),
+      transformer: transformer,
+    );
+    final r = padUint8ListTo32(hexToBytes(signature.r));
+    final s = padUint8ListTo32(hexToBytes(signature.s));
+    final v = unsignedIntToBytes(BigInt.from(signature.v));
+    return uint8ListFromList(r + s + v);
   }
 
   @override
-  Future<List<Uint8List>> signTransactions(
-      LedgerDevice device, List<Uint8List> transactions) {
-    // TODO: implement signTransactions
-    throw UnimplementedError();
+  Future<Uint8List> signEIP712Message(LedgerDevice device, String jsonMessage) {
+    late TypedMessage typedData;
+    try {
+      typedData = TypedMessage.fromJson(jsonDecode(jsonMessage));
+    } catch (_) {
+      throw ArgumentError(
+          'jsonMessage format is not corresponding to TypedMessage');
+    }
+    final domainSeparator = TypedDataUtil.hashStruct(
+        'EIP712Domain', typedData.domain, typedData.types, 'V4');
+    final hashStructMessage = TypedDataUtil.hashStruct(
+        typedData.primaryType, typedData.message, typedData.types, 'V4');
+    return signEIP712HashedMessage(
+        device: device,
+        domainSeparator: domainSeparator,
+        hashStructMessage: hashStructMessage);
   }
 }

@@ -17,6 +17,7 @@ dependencies:
     git:
       url: https://github.com/ludowkm/web3dart.git
       ref: 37b7793ecb53896699f1e43147459639ea54dffd
+  eth_sig_util: ^0.0.9
 
 dev_dependencies:
   flutter_test:
