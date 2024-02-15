@@ -5,15 +5,13 @@ List<int> splitPath(String path) {
   List<String> components = path.split("/");
 
   for (var element in components) {
-    if (element.isNotEmpty) {
-      int number = int.tryParse(element.substring(0, element.length - 1)) ?? 0;
+    int number = int.tryParse(element.replaceAll("'", "")) ?? 0;
 
-      if (element.endsWith("'")) {
-        number += 0x80000000;
-      }
-
-      result.add(number);
+    if (element.length > 1 && element[element.length - 1] == "'") {
+      number += 0x80000000;
     }
+
+    result.add(number);
   }
 
   return result;
