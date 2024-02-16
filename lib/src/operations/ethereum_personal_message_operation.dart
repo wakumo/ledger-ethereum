@@ -15,7 +15,7 @@ class EthereumPersonalMessageOperation extends LedgerOperation<Signature> {
   @override
   Future<List<Uint8List>> write(ByteDataWriter writer) async {
     final output = <Uint8List>[];
-    final List<int> paths = splitPath("44'/60'/0'/0/$accountIndex");
+    final List<int> paths = splitPath(getWalletDerivationPath(accountIndex));
     int offset = 0;
     while (offset != message.length) {
       final writer = ByteDataWriter();

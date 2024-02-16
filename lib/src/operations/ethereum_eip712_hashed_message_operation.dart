@@ -22,7 +22,7 @@ class EthereumEIP712HashedMessageOperation extends LedgerOperation<Signature> {
     writer.writeUint8(0x00);
     writer.writeUint8(0x00);
 
-    final List<int> paths = splitPath("44'/60'/0'/0/$accountIndex");
+    final List<int> paths = splitPath(getWalletDerivationPath(accountIndex));
     final buffer = Uint8List(1 + paths.length * 4 + 32 + 32);
     var offset = 0;
     buffer[0] = paths.length;

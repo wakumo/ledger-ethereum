@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+String getWalletDerivationPath(int accountIndex) =>
+    "44'/60'/$accountIndex'/0/0";
+
 List<int> splitPath(String path) {
   List<int> result = [];
   List<String> components = path.split("/");

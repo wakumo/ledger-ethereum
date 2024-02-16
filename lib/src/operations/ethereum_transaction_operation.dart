@@ -21,7 +21,7 @@ class EthereumTransactionOperation
     final vrsOffset = decodedInfo.vrsOffset;
 
     final output = <Uint8List>[];
-    final List<int> paths = splitPath("44'/60'/0'/0/$accountIndex");
+    final List<int> paths = splitPath(getWalletDerivationPath(accountIndex));
     int offset = 0;
     while (offset != transaction.length) {
       final writer = ByteDataWriter();
