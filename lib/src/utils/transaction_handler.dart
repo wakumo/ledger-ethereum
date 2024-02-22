@@ -99,18 +99,21 @@ class TransactionHandler {
         vrsOffset: vrsOffset);
   }
 
-  static Uint8List encodeTx(Transaction transaction, BigInt chainId) {
+  static Uint8List encodeTx(Transaction transaction, BigInt chainId,
+      [MsgSignature? signature]) {
     if (transaction.isEIP1559) {
       final encodedTx = ByteDataWriter();
       encodedTx.writeUint8(0x02);
-      encodedTx.write(encode(_encodeEIP1559ToRlp(transaction, chainId)));
+      encodedTx
+          .write(encode(_encodeEIP1559ToRlp(transaction, chainId, signature)));
       return encodedTx.toBytes();
     }
-    return encode(_encodeToRlp(transaction, chainId));
+    return encode(_encodeToRlp(transaction, chainId,
+        signature ?? MsgSignature(BigInt.zero, BigInt.zero, chainId.toInt())));
   }
 
   static List<dynamic> _encodeEIP1559ToRlp(
-      Transaction transaction, BigInt chainId) {
+      Transaction transaction, BigInt chainId, MsgSignature? signature) {
     final list = [
       chainId,
       transaction.nonce,
@@ -131,10 +134,18 @@ class TransactionHandler {
 
     list.add([]); // access list
 
+    if (signature != null) {
+      list
+        ..add(signature.v)
+        ..add(signature.r)
+        ..add(signature.s);
+    }
+
     return list;
   }
 
-  static List<dynamic> _encodeToRlp(Transaction transaction, BigInt chainId) {
+  static List<dynamic> _encodeToRlp(
+      Transaction transaction, BigInt chainId, MsgSignature? signature) {
     final list = [
       transaction.nonce,
       transaction.gasPrice?.getInWei,
@@ -149,8 +160,14 @@ class TransactionHandler {
 
     list
       ..add(transaction.value?.getInWei)
-      ..add(transaction.data)
-      ..add(chainId);
+      ..add(transaction.data);
+
+    if (signature != null) {
+      list
+        ..add(signature.v)
+        ..add(signature.r)
+        ..add(signature.s);
+    }
 
     return list;
   }
