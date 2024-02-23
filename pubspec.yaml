@@ -11,10 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  ledger_flutter:
-    git:
-      url: https://github.com/wakumo/ledger-flutter.git
-      ref: a11d300ac75660677fd03e63b05096c1ac0f279e
+  ledger_flutter: ^1.0.1
   web3dart:
     git:
       url: https://github.com/ludowkm/web3dart.git

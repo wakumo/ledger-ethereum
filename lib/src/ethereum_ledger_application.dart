@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:eth_sig_util/model/typed_data.dart';
+import 'package:ledger_ethereum/src/base_ethereum_ledger_application.dart';
 import 'package:ledger_ethereum/src/operations/ethereum_eip712_hashed_message_operation.dart';
 import 'package:ledger_ethereum/src/operations/ethereum_transaction_operation.dart';
 import 'package:ledger_flutter/ledger_flutter.dart';
@@ -14,11 +15,11 @@ import './operations/ethereum_personal_message_operation.dart';
 import 'operations/ethereum_public_key_operation.dart';
 import 'utils/utils.dart';
 
-class EthereumAppLedger extends LedgerApp {
+class EthereumLedgerApp extends BaseEthereumLedgerApp {
   final int accountIndex;
   final LedgerTransformer? transformer;
 
-  EthereumAppLedger(super.ledger, {this.accountIndex = 0, this.transformer});
+  EthereumLedgerApp(super.ledger, {this.accountIndex = 0, this.transformer});
 
   @override
   Future<List<String>> getAccounts(LedgerDevice device) async {
