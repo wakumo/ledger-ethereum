@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:web3dart/crypto.dart';
+import 'package:web3dart_avacus/crypto.dart';
 
 import 'length_tracking_byte_sink.dart';
 import 'utils.dart';

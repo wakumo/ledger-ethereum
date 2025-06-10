@@ -7,7 +7,7 @@ import 'package:ledger_ethereum/src/base_ethereum_ledger_application.dart';
 import 'package:ledger_ethereum/src/operations/ethereum_eip712_hashed_message_operation.dart';
 import 'package:ledger_ethereum/src/operations/ethereum_transaction_operation.dart';
 import 'package:ledger_flutter/ledger_flutter.dart';
-import 'package:web3dart/crypto.dart';
+import 'package:web3dart_avacus/crypto.dart';
 
 import './model/account.dart';
 import './model/signature.dart';
