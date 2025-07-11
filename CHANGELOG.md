@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Update to use new ledger to support multiple Ledger devices
+
 ## 1.0.1
 
 * Update to use stable web3dart_avacus

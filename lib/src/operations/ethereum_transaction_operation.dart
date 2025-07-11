@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:ledger_ethereum/src/utils/transaction_handler.dart';
-import 'package:ledger_flutter/ledger_flutter.dart';
+import 'package:ledger/ledger.dart';
 
 import '../model/decoded_info.dart';
 import '../utils/utils.dart';

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:ledger_flutter/ledger_flutter.dart';
+import 'package:ledger/ledger.dart';
 import 'package:web3dart_avacus/crypto.dart';
 
 import '../model/account.dart';

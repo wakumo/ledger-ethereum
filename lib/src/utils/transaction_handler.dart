@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:ledger_ethereum/src/model/decoded_transaction.dart';
-import 'package:ledger_flutter/ledger_flutter.dart';
+import 'package:ledger/ledger.dart';
 import 'package:web3dart_avacus/crypto.dart';
 import 'package:web3dart_avacus/web3dart_avacus.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:ledger_flutter/ledger_flutter.dart';
+import 'package:ledger/ledger.dart';
 
 abstract class BaseEthereumLedgerApp extends LedgerApp {
   BaseEthereumLedgerApp(super.ledger);
